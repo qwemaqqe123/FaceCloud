@@ -72,3 +72,4 @@ class Post:
             raise ValueError("Максимальна довжина публікації — 280 символів")
             
         return Post(post_id, content)
+        
