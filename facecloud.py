@@ -1,4 +1,10 @@
-import datetime
+from datetime import datetime
+
+MIN_PASSWORD_LENGTH = 6
+MIN_NICKNAME_LENGTH = 3
+MAX_NICKNAME_LENGTH = 15
+MAX_POST_LENGTH = 280
+
 
 class User:
     def __init__(self, user_id: int, email: str, password: str):
@@ -8,22 +14,20 @@ class User:
         self.profile = None
 
     @staticmethod
-    def register(user_id: int, email: str, password: str, existing_emails: list) -> 'User':
+    def register(user_id: int, email: str, password: str, existing_emails: list) -> "User":
         """
         Реєстрація нового користувача.
         Нетривіальна логіка: валідація email, довжини пароля та унікальності.
         """
         if "@" not in email or "." not in email.split("@")[-1]:
             raise ValueError("Некоректний формат email")
-        
-        # ЛОГІЧНИЙ БАГ №1: Замість < 6 написано <= 6. 
-        # Пароль рівно з 6 символів буде помилково заблоковано.
-        if len(password) <= 6: 
+
+        if len(password) < MIN_PASSWORD_LENGTH:
             raise ValueError("Пароль занадто короткий (мінімум 6 символів)")
-            
+
         if email in existing_emails:
             raise ValueError("Користувач з таким email вже існує")
-            
+
         return User(user_id, email, password)
 
     def login(self, input_password: str) -> bool:
@@ -41,12 +45,12 @@ class Profile:
         Оновлення профілю.
         Нетривіальна логіка: перевірка довжини нікнейму та дозволених символів.
         """
-        if len(new_nickname) < 3 or len(new_nickname) > 15:
+        if len(new_nickname) < MIN_NICKNAME_LENGTH or len(new_nickname) > MAX_NICKNAME_LENGTH:
             raise ValueError("Нікнейм повинен бути від 3 до 15 символів")
-            
+
         if not new_nickname.isalnum():
             raise ValueError("Нікнейм може містити лише букви та цифри")
-            
+
         self.nickname = new_nickname
         self.bio = new_bio
 
@@ -55,20 +59,18 @@ class Post:
     def __init__(self, post_id: int, content: str):
         self.id = post_id
         self.content = content
-        self.created_at = datetime.datetime.now()
+        self.created_at = datetime.now()
 
     @staticmethod
-    def create_post(post_id: int, content: str) -> 'Post':
+    def create_post(post_id: int, content: str) -> "Post":
         """
         Створення публікації.
-        Нетривіальна логіка: перевірка на порожнечу та ліміт символів (макс 280).
+        Нетривіальна логіка: перевірка на порожнечу та ліміт символів.
         """
-        # ЛОГІЧНИЙ БАГ №2: Відсутній .strip(). 
-        # Пост із одних пробілів "   " успішно створиться, хоча він порожній.
-        if len(content) == 0:
+        if not content.strip():
             raise ValueError("Публікація не може бути порожньою")
-            
-        if len(content) > 280:
+
+        if len(content) > MAX_POST_LENGTH:
             raise ValueError("Максимальна довжина публікації — 280 символів")
-            
+
         return Post(post_id, content)
